@@ -162,3 +162,19 @@ export interface MenuItem {
   roles: UserRole[];
   children?: MenuItem[];
 }
+
+export interface PaymentSchedule {
+  id: string;
+  studentId: string;
+  contractId: string;
+  installmentNumber: number;
+  totalInstallments: number;
+  dueDate: string;
+  amount: number;
+  status: 'upcoming' | 'due' | 'overdue' | 'paid' | 'partial';
+  paidAmount: number;
+  description: string;
+  createdAt: string;
+  paidAt?: string;
+  paymentId?: string; // Link to actual payment when paid
+}

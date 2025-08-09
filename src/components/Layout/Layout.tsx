@@ -3,11 +3,26 @@ import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { Dashboard } from '../Dashboard/Dashboard';
 import { StudentList } from '../Students/StudentList';
+import { CoachList } from '../Coaches/CoachList';
 import { InvoiceList } from '../Invoices/InvoiceList';
+import { PaymentList } from '../Payments/PaymentList';
+import { PaymentScheduleList } from '../PaymentSchedule/PaymentScheduleList';
+import { FullPageLoader } from '../Common/LoadingSpinner';
+import { FullPageError, ErrorMessage } from '../Common/ErrorMessage';
 import { useApp } from '../../context/AppContext';
 
 export const Layout: React.FC = () => {
-  const { activeView, sidebarOpen } = useApp();
+  const { activeView, sidebarOpen, isLoading, error, refreshData } = useApp();
+
+  // İlk yükleme sırasında tam sayfa loader göster
+  if (isLoading && !activeView) {
+    return <FullPageLoader message="Academico yükleniyor..." />;
+  }
+
+  // Kritik hata durumunda tam sayfa hata göster
+  if (error && !activeView) {
+    return <FullPageError message={error} onRetry={refreshData} />;
+  }
 
   const renderContent = () => {
     switch (activeView) {
@@ -15,17 +30,14 @@ export const Layout: React.FC = () => {
         return <Dashboard />;
       case 'students':
         return <StudentList />;
+      case 'coaches':
+        return <CoachList />;
       case 'invoices':
         return <InvoiceList />;
-      case 'coaches':
-        return (
-          <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Koçlar</h1>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-              <p className="text-gray-600">Koç yönetimi modülü yakında kullanıma açılacak.</p>
-            </div>
-          </div>
-        );
+      case 'payments':
+        return <PaymentList />;
+      case 'payment-schedules':
+        return <PaymentScheduleList />;
       case 'services':
         return (
           <div className="p-6">
@@ -93,6 +105,15 @@ export const Layout: React.FC = () => {
         <Header />
         
         <main className="p-6">
+          {error && (
+            <div className="mb-6">
+              <ErrorMessage 
+                message={error} 
+                onRetry={refreshData}
+                onDismiss={() => {}} 
+              />
+            </div>
+          )}
           {renderContent()}
         </main>
       </div>

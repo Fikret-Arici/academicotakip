@@ -1,0 +1,100 @@
+{
+  "students": [
+    {
+      "id": "1",
+      "firstName": "Elif",
+      "lastName": "Yılmaz",
+      "grade": "11. Sınıf",
+      "school": "Atatürk Anadolu Lisesi",
+      "parentId": "1",
+      "status": "active",
+      "tags": ["matematik", "fizik"],
+      "createdAt": "2024-01-15T10:30:00Z"
+    },
+    {
+      "id": "2",
+      "firstName": "Can",
+      "lastName": "Demir",
+      "grade": "12. Sınıf",
+      "school": "Fen Lisesi",
+      "parentId": "2",
+      "status": "active",
+      "tags": ["kimya", "biyoloji"],
+      "createdAt": "2024-01-20T14:15:00Z"
+    }
+  ],
+  "parents": [
+    {
+      "id": "1",
+      "name": "Ayşe Yılmaz",
+      "phone": "+90 532 123 4567",
+      "email": "ayse.yilmaz@email.com",
+      "preferredChannel": "whatsapp",
+      "kvkkConsent": true,
+      "createdAt": "2024-01-15T10:30:00Z"
+    },
+    {
+      "id": "2",
+      "name": "Mehmet Demir",
+      "phone": "+90 533 987 6543",
+      "email": "mehmet.demir@email.com",
+      "preferredChannel": "email",
+      "kvkkConsent": true,
+      "createdAt": "2024-01-20T14:15:00Z"
+    }
+  ],
+  "coaches": [
+    {
+      "id": "1",
+      "name": "Dr. Ahmet Şen",
+      "branch": ["Matematik", "Fizik"],
+      "hourlyRate": 200,
+      "email": "ahmet.sen@academico.com",
+      "phone": "+90 532 111 2233",
+      "availability": "Pazartesi-Cuma 09:00-18:00",
+      "assignedStudents": ["1"],
+      "sharePercentage": 60,
+      "status": "active",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "paymentSchedules": [
+    {
+      "id": "1",
+      "studentId": "1",
+      "contractId": "1",
+      "installmentNumber": 1,
+      "totalInstallments": 12,
+      "dueDate": "2024-12-15T00:00:00Z",
+      "amount": 1500,
+      "status": "upcoming",
+      "paidAmount": 0,
+      "description": "Ocak Ayı Ders Ücreti",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "payments": [
+    {
+      "id": "1",
+      "invoiceId": "1",
+      "paidAt": "2024-02-10T14:30:00Z",
+      "amount": 1888,
+      "method": "transfer",
+      "reference": "TRF001",
+      "coachShare": 1132.8,
+      "managementShare": 755.2,
+      "coachSharePercentage": 60,
+      "createdAt": "2024-02-10T14:30:00Z"
+    }
+  ],
+  "invoices": [],
+  "contracts": [],
+  "sessions": [],
+  "expenses": [],
+  "services": [],
+  "packages": [],
+  "settings": {
+    "lastBackup": "2024-01-01T00:00:00Z",
+    "version": "1.0.0"
+  }
+}
