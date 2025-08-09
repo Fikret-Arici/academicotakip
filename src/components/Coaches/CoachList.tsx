@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { Search, Plus, Filter, Users, Phone, Mail, Edit2, Trash2, X, UserCheck } from 'lucide-react';
+import { Search, Plus, Filter, Users, Phone, Mail, Edit2, Trash2, X, UserCheck, CreditCard, Calendar } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { Coach } from '../../types';
+import { Coach, Payment } from '../../types';
 import { ErrorBoundary } from '../Common/ErrorBoundary';
 
 export const CoachList: React.FC = () => {
-  const { 
+    const { 
     coaches, 
     students,
+    payments,
     addCoach, 
     updateCoach, 
-    deleteCoach,
+    deleteCoach, 
     isLoading 
   } = useApp();
   
@@ -61,13 +62,7 @@ export const CoachList: React.FC = () => {
     return status === 'active' ? 'Aktif' : 'Pasif';
   };
 
-  const getAssignedStudentNames = (studentIds: string[]) => {
-    return studentIds
-      .map(id => students.find(s => s.id === id))
-      .filter(Boolean)
-      .map(s => `${s!.firstName} ${s!.lastName}`)
-      .join(', ');
-  };
+
 
   // Modal functions
   const openAddModal = () => {
@@ -639,19 +634,27 @@ export const CoachList: React.FC = () => {
 
             <div className="p-6">
               {(() => {
-                // Bu koça ait ödemeler
-                const coachPayments = payments.filter(payment => {
+                // Bu koça ait öğrenciler
+                const coachStudents = students.filter(student => student.coachId === incomeCoach.id);
+                
+                // Bu koça ait ödemeler (gerçek ödemeler + potansiyel aylık gelir)
+                const coachPayments = payments.filter((payment: Payment) => {
                   // Koçun öğrencilerinden gelen ödemeler
                   const paymentStudent = students.find(student => 
                     payment.invoiceId.includes(student.id) || 
-                    incomeCoach.assignedStudents?.includes(student.id)
+                    student.coachId === incomeCoach.id
                   );
-                  return paymentStudent && incomeCoach.assignedStudents?.includes(paymentStudent.id);
+                  return paymentStudent && paymentStudent.coachId === incomeCoach.id;
                 });
 
-                const totalRevenue = coachPayments.reduce((sum, payment) => sum + payment.amount, 0);
-                const totalCoachShare = coachPayments.reduce((sum, payment) => sum + (payment.coachShare || 0), 0);
-                const totalManagementShare = coachPayments.reduce((sum, payment) => sum + (payment.managementShare || 0), 0);
+                // Potansiyel aylık gelir hesapla
+                const monthlyPotential = coachStudents.reduce((sum, student) => {
+                  return sum + (student.monthlyFee || 0);
+                }, 0);
+
+                const totalRevenue = coachPayments.reduce((sum: number, payment: Payment) => sum + payment.amount, 0);
+                const totalCoachShare = coachPayments.reduce((sum: number, payment: Payment) => sum + (payment.coachShare || 0), 0);
+                const totalManagementShare = coachPayments.reduce((sum: number, payment: Payment) => sum + (payment.managementShare || 0), 0);
 
                 const formatCurrency = (amount: number) => {
                   return new Intl.NumberFormat('tr-TR', {
@@ -663,7 +666,7 @@ export const CoachList: React.FC = () => {
                 return (
                   <div className="space-y-6">
                     {/* Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                       <div className="bg-blue-50 rounded-lg p-6">
                         <div className="flex items-center">
                           <div className="p-3 bg-blue-100 rounded-lg">
@@ -702,6 +705,19 @@ export const CoachList: React.FC = () => {
                           </div>
                         </div>
                       </div>
+
+                      <div className="bg-yellow-50 rounded-lg p-6">
+                        <div className="flex items-center">
+                          <div className="p-3 bg-yellow-100 rounded-lg">
+                            <Calendar className="w-6 h-6 text-yellow-600" />
+                          </div>
+                          <div className="ml-4">
+                            <p className="text-sm font-medium text-yellow-600">Aylık Potansiyel</p>
+                            <p className="text-2xl font-bold text-yellow-900">{formatCurrency(monthlyPotential)}</p>
+                            <p className="text-xs text-yellow-600">{coachStudents.length} öğrenci</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Coach Info */}
@@ -724,13 +740,65 @@ export const CoachList: React.FC = () => {
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">Atanmış Öğrenci Sayısı</p>
-                          <p className="font-medium text-gray-900">{incomeCoach.assignedStudents?.length || 0} öğrenci</p>
+                          <p className="font-medium text-gray-900">{coachStudents.length} öğrenci</p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">Pay Oranı</p>
                           <p className="font-medium text-gray-900">%{incomeCoach.sharePercentage}</p>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Student List */}
+                    <div className="bg-white rounded-lg border border-gray-200">
+                      <div className="p-4 border-b border-gray-200">
+                        <h3 className="text-lg font-medium text-gray-900">Atanmış Öğrenciler ({coachStudents.length})</h3>
+                      </div>
+                      
+                      {coachStudents.length > 0 ? (
+                        <div className="p-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {coachStudents.map((student) => (
+                              <div key={student.id} className="p-4 bg-gray-50 rounded-lg">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="font-medium text-gray-900">
+                                      {student.firstName} {student.lastName}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {student.grade} - {student.school}
+                                    </p>
+                                    {student.monthlyFee && (
+                                      <p className="text-sm text-green-600 font-medium">
+                                        Aylık: {formatCurrency(student.monthlyFee)}
+                                        {student.paymentDay && (
+                                          <span className="text-gray-500 ml-1">
+                                            ({student.paymentDay}. gün)
+                                          </span>
+                                        )}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className="text-right">
+                                    <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                                      student.status === 'active' 
+                                        ? 'bg-green-100 text-green-800' 
+                                        : 'bg-gray-100 text-gray-800'
+                                    }`}>
+                                      {student.status === 'active' ? 'Aktif' : 'Pasif'}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-8 text-center">
+                          <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-gray-600">Bu koça henüz öğrenci atanmamış.</p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Payment History */}
@@ -762,7 +830,7 @@ export const CoachList: React.FC = () => {
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                              {coachPayments.map((payment) => (
+                              {coachPayments.map((payment: Payment) => (
                                 <tr key={payment.id} className="hover:bg-gray-50">
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {new Date(payment.paidAt).toLocaleDateString('tr-TR')}
@@ -922,6 +990,83 @@ export const CoachList: React.FC = () => {
                   Tamam
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assign Student Modal */}
+      {showAssignModal && assigningCoach && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Öğrenci Ataması - {assigningCoach.name}
+                </h2>
+                <button
+                  onClick={closeAssignModal}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="space-y-4">
+                {students.map(student => {
+                  const isAssigned = assigningCoach.assignedStudents?.includes(student.id) || false;
+                  
+                  return (
+                    <div key={student.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                          <span className="text-blue-600 font-semibold text-sm">
+                            {student.firstName.charAt(0)}{student.lastName.charAt(0)}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {student.firstName} {student.lastName}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {student.grade} - {student.school}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3">
+                        {isAssigned && (
+                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                            Atanmış
+                          </span>
+                        )}
+                        
+                        <button
+                          onClick={() => handleAssignStudent(student.id, !isAssigned)}
+                          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                            isAssigned
+                              ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                              : 'bg-green-100 text-green-700 hover:bg-green-200'
+                          }`}
+                        >
+                          {isAssigned ? 'Kaldır' : 'Ata'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200">
+              <button
+                onClick={closeAssignModal}
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+              >
+                Tamam
+              </button>
             </div>
           </div>
         </div>

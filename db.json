@@ -1,34 +1,6 @@
 {
   "students": [
     {
-      "id": "1",
-      "firstName": "Elif",
-      "lastName": "Yılmaz",
-      "grade": "11. Sınıf",
-      "school": "Atatürk Anadolu Lisesi",
-      "parentId": "1",
-      "status": "active",
-      "tags": [
-        "matematik",
-        "fizik"
-      ],
-      "createdAt": "2024-01-15T10:30:00Z"
-    },
-    {
-      "id": "2",
-      "firstName": "Can",
-      "lastName": "Demir",
-      "grade": "12. Sınıf",
-      "school": "Fen Lisesi",
-      "parentId": "2",
-      "status": "active",
-      "tags": [
-        "kimya",
-        "biyoloji"
-      ],
-      "createdAt": "2024-01-20T14:15:00Z"
-    },
-    {
       "id": "1754771093901",
       "firstName": "vfdsv",
       "lastName": "vfddf",
@@ -38,6 +10,24 @@
       "tags": [],
       "parentId": "1754771093878",
       "createdAt": "2025-08-09T20:24:53.901Z"
+    },
+    {
+      "id": "1754773792055",
+      "firstName": "vfdv",
+      "lastName": "vdfv",
+      "grade": "10. Sınıf",
+      "school": "vdfv",
+      "status": "active",
+      "tags": [],
+      "parentId": "1754773792022",
+      "coachId": "1754772020565",
+      "monthlyFee": 0,
+      "paymentDay": 15,
+      "totalAmount": 2500,
+      "installments": 1,
+      "startDate": "2025-12-12",
+      "endDate": "2025-12-15",
+      "createdAt": "2025-08-09T21:09:52.055Z"
     }
   ],
   "parents": [
@@ -85,6 +75,15 @@
       "preferredChannel": "phone",
       "kvkkConsent": true,
       "createdAt": "2025-08-09T20:24:53.878Z"
+    },
+    {
+      "id": "1754773792022",
+      "name": "vsdfv",
+      "phone": "vdfv",
+      "email": "fiko@gmail.com",
+      "preferredChannel": "phone",
+      "kvkkConsent": true,
+      "createdAt": "2025-08-09T21:09:52.022Z"
     }
   ],
   "coaches": [
@@ -101,12 +100,14 @@
       "availability": "Pazartesi-Cuma 09:00-18:00",
       "assignedStudents": [
         "1",
-        "2"
+        "2",
+        "1754773792055",
+        "1754771093901"
       ],
       "sharePercentage": 60,
       "status": "active",
       "createdAt": "2024-01-01T00:00:00Z",
-      "updatedAt": "2025-08-09T20:48:40.958Z"
+      "updatedAt": "2025-08-09T21:14:46.787Z"
     },
     {
       "id": "1754772020565",
@@ -128,7 +129,7 @@
   "paymentSchedules": [
     {
       "id": "1",
-      "studentId": "1",
+      "studentId": null,
       "contractId": "1",
       "installmentNumber": 1,
       "totalInstallments": 12,

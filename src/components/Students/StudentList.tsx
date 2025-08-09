@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Search, Plus, Filter, Users, Phone, Mail, Tag, Edit2, Trash2, X } from 'lucide-react';
+import { Search, Plus, Filter, Users, Phone, Mail, Tag, Edit2, Trash2, X, CreditCard } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Student } from '../../types';
 
 export const StudentList: React.FC = () => {
   const { 
     students, 
-    parents, 
+    parents,
+    coaches, 
     addStudent, 
     updateStudent, 
     deleteStudent, 
@@ -29,7 +30,15 @@ export const StudentList: React.FC = () => {
     school: '',
     status: 'active' as 'active' | 'inactive',
     tags: [] as string[],
-    parentId: ''
+    parentId: '',
+    // Ödeme bilgileri
+    coachId: '',
+    monthlyFee: 0,
+    paymentDay: 1,
+    totalAmount: 0,
+    installments: 12,
+    startDate: '',
+    endDate: ''
   });
 
   const [parentData, setParentData] = useState({
@@ -76,7 +85,15 @@ export const StudentList: React.FC = () => {
       school: '',
       status: 'active',
       tags: [],
-      parentId: ''
+      parentId: '',
+      // Ödeme bilgileri
+      coachId: '',
+      monthlyFee: 0,
+      paymentDay: 1,
+      totalAmount: 0,
+      installments: 12,
+      startDate: '',
+      endDate: ''
     });
     setParentData({
       name: '',
@@ -97,7 +114,15 @@ export const StudentList: React.FC = () => {
       school: student.school,
       status: student.status,
       tags: student.tags || [],
-      parentId: student.parentId
+      parentId: student.parentId,
+      // Ödeme bilgileri
+      coachId: student.coachId || '',
+      monthlyFee: student.monthlyFee || 0,
+      paymentDay: student.paymentDay || 1,
+      totalAmount: student.totalAmount || 0,
+      installments: student.installments || 12,
+      startDate: student.startDate || '',
+      endDate: student.endDate || ''
     });
     
     const parent = getParentInfo(student.parentId);
@@ -286,6 +311,33 @@ export const StudentList: React.FC = () => {
                         </span>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* Koç Bilgisi */}
+                {student.coachId && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Users className="w-4 h-4 mr-2" />
+                    <span>
+                      Koç: <span className="font-medium text-blue-600">
+                        {coaches.find(c => c.id === student.coachId)?.name || 'Bilinmeyen Koç'}
+                      </span>
+                    </span>
+                  </div>
+                )}
+
+                {/* Ödeme Bilgisi */}
+                {student.monthlyFee && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    <span>
+                      Aylık: <span className="font-medium text-green-600">₺{student.monthlyFee}</span>
+                      {student.paymentDay && (
+                        <span className="text-gray-500 ml-1">
+                          (Her ayın {student.paymentDay}. günü)
+                        </span>
+                      )}
+                    </span>
                   </div>
                 )}
               </div>
@@ -498,6 +550,145 @@ export const StudentList: React.FC = () => {
                     </select>
                   </div>
                 </div>
+              </div>
+
+              {/* Ödeme Bilgileri */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Ödeme & Kurs Bilgileri</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Koç Seçimi *
+                    </label>
+                    <select
+                      required
+                      value={studentData.coachId}
+                      onChange={(e) => setStudentData(prev => ({ ...prev, coachId: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Koç Seçin</option>
+                      {coaches.filter(c => c.status === 'active').map(coach => (
+                        <option key={coach.id} value={coach.id}>
+                          {coach.name} - {coach.branch.join(', ')} (₺{coach.hourlyRate}/saat)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Aylık Ücret (₺) *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      step="0.01"
+                      value={studentData.monthlyFee}
+                      onChange={(e) => setStudentData(prev => ({ ...prev, monthlyFee: Number(e.target.value) }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Aylık ödeme tutarı"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Ödeme Günü (Ayın kaçı)
+                    </label>
+                    <select
+                      value={studentData.paymentDay}
+                      onChange={(e) => setStudentData(prev => ({ ...prev, paymentDay: Number(e.target.value) }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      {Array.from({length: 31}, (_, i) => i + 1).map(day => (
+                        <option key={day} value={day}>
+                          {day}. gün
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Toplam Kurs Ücreti (₺)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={studentData.totalAmount}
+                      onChange={(e) => setStudentData(prev => ({ ...prev, totalAmount: Number(e.target.value) }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Toplam kurs ücreti"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Taksit Sayısı
+                    </label>
+                    <select
+                      value={studentData.installments}
+                      onChange={(e) => setStudentData(prev => ({ ...prev, installments: Number(e.target.value) }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      {[1, 2, 3, 4, 5, 6, 9, 10, 12, 18, 24].map(months => (
+                        <option key={months} value={months}>
+                          {months} taksit
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Kursa Başlama Tarihi
+                    </label>
+                    <input
+                      type="date"
+                      value={studentData.startDate}
+                      onChange={(e) => setStudentData(prev => ({ ...prev, startDate: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Kurs Bitiş Tarihi
+                    </label>
+                    <input
+                      type="date"
+                      value={studentData.endDate}
+                      onChange={(e) => setStudentData(prev => ({ ...prev, endDate: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Ödeme Özeti */}
+                {studentData.monthlyFee > 0 && studentData.coachId && (
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <h4 className="font-medium text-gray-900 mb-2">Ödeme Özeti:</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-600">Aylık Ödeme:</span>
+                        <p className="font-medium">₺{studentData.monthlyFee}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Koç Payı (%{coaches.find(c => c.id === studentData.coachId)?.sharePercentage || 60}):</span>
+                        <p className="font-medium text-green-600">
+                          ₺{((studentData.monthlyFee * (coaches.find(c => c.id === studentData.coachId)?.sharePercentage || 60)) / 100).toFixed(2)}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Yönetim Payı (%{100 - (coaches.find(c => c.id === studentData.coachId)?.sharePercentage || 60)}):</span>
+                        <p className="font-medium text-blue-600">
+                          ₺{(studentData.monthlyFee - ((studentData.monthlyFee * (coaches.find(c => c.id === studentData.coachId)?.sharePercentage || 60)) / 100)).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Form Actions */}

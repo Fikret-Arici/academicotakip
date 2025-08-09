@@ -9,6 +9,14 @@ export interface Student {
   parentId: string;
   status: 'active' | 'inactive';
   tags: string[];
+  // Ödeme bilgileri
+  coachId?: string; // Hangi koça atanmış
+  monthlyFee?: number; // Aylık ücret
+  paymentDay?: number; // Ayın hangi günü ödeme (1-31)
+  totalAmount?: number; // Toplam kurs ücreti
+  installments?: number; // Kaç taksit
+  startDate?: string; // Kursa başlama tarihi
+  endDate?: string; // Kurs bitiş tarihi
   createdAt: string;
 }
 
